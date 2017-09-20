@@ -1,7 +1,11 @@
 package drunkedcat
 
 
-import scala.math.random
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.hadoop.mapreduce.lib.input.{CombineTextInputFormat, TextInputFormat}
+
 import org.apache.spark.sql.SparkSession
 
 
@@ -10,17 +14,20 @@ object BatchJob {
   def main(args: Array[String]) {
     val spark = SparkSession
       .builder
-      .appName("Spark Pi")
+      .appName("line count")
+      //.master("local")
       .getOrCreate()
 
-    val slices = if (args.length > 0) args(0).toInt else 2
-    val n = math.min(100000L * slices, Int.MaxValue).toInt // avoid overflow
-    val count = spark.sparkContext.parallelize(1 until n, slices).map { i =>
-      val x = random * 2 - 1
-      val y = random * 2 - 1
-      if (x*x + y*y <= 1) 1 else 0
-    }.reduce(_ + _)
-    println("Pi is roughly " + 4.0 * count / (n - 1))
+    val input = "/ad4_prod/view/*/170919"
+    spark.sparkContext.hadoopConfiguration.setInt("mapreduce.input.fileinputformat.split.maxsize", 256 * 1024 * 1024)
+    val files = spark.sparkContext.newAPIHadoopFile(input, classOf[CombineTextInputFormat], classOf[LongWritable], classOf[Text], spark.sparkContext.hadoopConfiguration)
+    val count = files.map{
+      case (offset, line) => {
+        offset
+      }
+    }.count()
+
+    println("lines is " + count)
     spark.stop()
   }
 }
