@@ -2,8 +2,9 @@
 This project is for easily develop Spark with Scala.
 
 To using it, 
-
-```cd target/generated_sources/archetype && mvn install```
+```
+./local_install.sh
+```
 
 Then you install this archetype into your local mvn center.
 
