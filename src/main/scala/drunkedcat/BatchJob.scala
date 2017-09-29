@@ -19,13 +19,20 @@ case class Temp(idAndSpot: String, t: String, ts:Int)
 object BatchJob{
   def main(args: Array[String]) {
     val conf = new SparkConf()
+
+    val envHome = System.getenv("HOME")
+    if(envHome.contains("/Users")) {
+      // mac os, for test
+      conf.setMaster("local")
+    }else{
+      // set by user from cmd line
+    }
     conf.set("spark.driver.maxResultSize", "8T")
     val spark = SparkSession
       .builder
+      .config(conf)
       .appName("line count")
-      //.master("local")
       .getOrCreate()
-    SparkSession.builder().config(new SparkConf)
     import spark.implicits._
 
     val input = args(0)
@@ -48,7 +55,7 @@ object BatchJob{
     /*  rdd */
     spark.sparkContext.hadoopConfiguration.setInt("mapreduce.input.fileinputformat.split.maxsize", 256 * 1024 * 1024)
     val files = spark.sparkContext.newAPIHadoopFile(input, classOf[CombineTextInputFormat], classOf[LongWritable], classOf[Text], spark.sparkContext.hadoopConfiguration)
-    val tNotNull = files.map {
+    val x1 = files.map {
       case (_, lineText) => {
         val line = lineText.toString.trim()
         val parts = line.split(",", -1)
@@ -59,7 +66,13 @@ object BatchJob{
         val lId = id + "__" + spot
         (lId, Temp(lId, t, ts))
       }
-    }.groupByKey()
+    }
+
+    x1.saveAsTextFile(output + "/x1")
+
+    val x2 = x1.groupByKey()
+    x2.saveAsTextFile(output + "/x2")
+    val x3 = x2
       .flatMap{
         case (id, temps) => {
           val ret = new util.ArrayList[Long]
@@ -81,10 +94,11 @@ object BatchJob{
           }
           ret.toArray
         }
-      }.saveAsTextFile(output)
+      }
+    x3.saveAsTextFile(output + "/x3")
 
     val rrr = fs.create(new Path(output + "/count"))
-    rrr.writeBytes("" + tNotNull)
+    rrr.writeBytes("" + 3)
     rrr.close()
     /* */
 
