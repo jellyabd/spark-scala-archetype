@@ -73,6 +73,11 @@ under the License.
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
 		</dependency>
+		<dependency><!-- Spark Streaming Kafka -->
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming-kafka-0-8_${scala.binary.version}</artifactId>
+			<version>${spark.version}</version>
+		</dependency>
 
 		<!-- explicitly add a standard loggin framework, as Flink does not have
 			a hard dependency on one specific framework by default -->
@@ -86,6 +91,8 @@ under the License.
 			<artifactId>log4j</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
+
+
 
 
 		<dependency>
