@@ -188,6 +188,15 @@ under the License.
 								</transformer>
 							</transformers>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<relocations>
+								<relocation>
+									<pattern>a.b.c.d</pattern>
+									<shadedPattern>shade.a.b.c.d</shadedPattern>
+									<excludes>
+										<exclude>org.codehaus.plexus.util.xml.pull.*</exclude>
+									</excludes>
+								</relocation>
+							</relocations>
 						</configuration>
 					</execution>
 				</executions>
